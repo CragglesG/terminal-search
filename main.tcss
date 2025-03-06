@@ -1,0 +1,11 @@
+Button {
+    margin: 1 2;
+}
+
+Horizontal > VerticalScroll {
+    align: center top;
+}
+
+Input {
+    width: 50%;
+}
