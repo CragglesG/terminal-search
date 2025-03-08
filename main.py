@@ -57,14 +57,31 @@ class TerminalSearch(App):
 
     @work(exclusive=True, thread=True)
     def perform_search(self) -> None:
-        results = self.search.search(self.search_query)
-        self.call_from_thread(self.switch_to_results, results)
+        try:
+            results = self.search.search(self.search_query)
+            self.call_from_thread(self.switch_to_results, results)
+        except ValueError as e:
+            self.notify(f"Sorry, we had trouble finding results for your search.", severity="error")
+            self.call_from_thread(self.turn_off_loading, self.query_one("#search-button"))
+        except Exception as e:
+            self.notify(f"An unexpected error occurred: {e}", severity="error")
+            self.call_from_thread(self.turn_off_loading, self.query_one("#search-button"))
 
     @work(exclusive=True, thread=True)
     def perform_get(self, button: Button | Widget) -> None:
         url = self.results[int(button.id.split("-")[1])].url
-        contents = self.search.get(url)
-        self.call_from_thread(self.switch_to_contents, contents, button)
+        try:
+            contents = self.search.get(url)
+            self.call_from_thread(self.switch_to_contents, contents, button)
+        except ValueError as e:
+            self.notify(f"Sorry, we had trouble finding the contents of this webpage.", severity="error")
+            self.call_from_thread(self.turn_off_loading, button)
+        except Exception as e:
+            self.notify(f"An unexpected error occurred: {e}", severity="error")
+            self.call_from_thread(self.turn_off_loading, button)
+
+    def turn_off_loading(self, widget: Widget):
+        widget.loading = False
 
     def switch_to_results(self, results):
         self.results = results
