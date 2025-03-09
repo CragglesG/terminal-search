@@ -50,3 +50,7 @@ Screen {
     width: 100%;
     height: auto;
 }
+
+#github-link {
+    margin: 2 2;
+}

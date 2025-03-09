@@ -30,6 +30,7 @@ class TerminalSearch(App):
                     with Horizontal():
                         yield Button("search", id="search-button", variant="primary")
                         yield Button("settings", id="settings-button", variant="default")
+                        yield Link(text="GitHub", url="https://github.com/CragglesG/terminal-search", id="github-link")
             with VerticalScroll(id="results"):
                 yield ListView(id="results-list")
             with VerticalScroll(id="settings"):
@@ -61,10 +62,10 @@ class TerminalSearch(App):
             results = self.search.search(self.search_query)
             self.call_from_thread(self.switch_to_results, results)
         except ValueError as e:
-            self.notify(f"Sorry, we had trouble finding results for your search.", severity="error")
+            self.notify(f"Sorry, we had trouble finding results for your search. Try rephrasing your query or changing settings.", severity="error", title="No Results Found")
             self.call_from_thread(self.turn_off_loading, self.query_one("#search-button"))
         except Exception as e:
-            self.notify(f"An unexpected error occurred: {e}", severity="error")
+            self.notify(f"An unexpected error occurred: {e}", severity="error", title="Unexpected Error")
             self.call_from_thread(self.turn_off_loading, self.query_one("#search-button"))
 
     @work(exclusive=True, thread=True)
@@ -74,10 +75,10 @@ class TerminalSearch(App):
             contents = self.search.get(url)
             self.call_from_thread(self.switch_to_contents, contents, button)
         except ValueError as e:
-            self.notify(f"Sorry, we had trouble finding the contents of this webpage.", severity="error")
+            self.notify(f"Sorry, we had trouble finding the contents of this webpage.", severity="error", title="No Contents Found")
             self.call_from_thread(self.turn_off_loading, button)
         except Exception as e:
-            self.notify(f"An unexpected error occurred: {e}", severity="error")
+            self.notify(f"An unexpected error occurred: {e}", severity="error", title="Unexpected Error")
             self.call_from_thread(self.turn_off_loading, button)
 
     def turn_off_loading(self, widget: Widget):
@@ -142,15 +143,18 @@ class TerminalSearch(App):
 
     def action_back_to_results(self) -> None:
         cs = self.query_one(ContentSwitcher)
-        if not self.query_one("#contents-list"):
+        if not self.query("#contents-list") and self.query("#result-0"):
             cs.current = "results"
-        else:
+        elif self.query("#result-0"):
             cs.current = "results"
             self.query_one("#contents-list").remove()
+        else:
+            self.notify("You haven't searched for anything yet.")
         self.sub_title = ""
 
-
-
-if __name__ == "__main__":
+def main():
     app = TerminalSearch()
     app.run()
+
+if __name__ == "__main__":
+    main()
