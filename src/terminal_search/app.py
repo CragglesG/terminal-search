@@ -1,4 +1,4 @@
-from search import Search
+from .search import Search
 from textual import on, work
 from textual.widget import Widget
 from textual.app import App, ComposeResult
